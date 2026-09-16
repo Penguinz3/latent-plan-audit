@@ -1,0 +1,71 @@
+{
+  "schema_version": "pusht-component-posthoc-spec-v1",
+  "status": "frozen_before_component_outcomes",
+  "created_date": "2026-09-14",
+  "study": "PWA-PushT-v1.4",
+  "source_bindings": {
+    "recovery_merge_index": {
+      "path": "experiments/official_pusht_v14_recovery_20260831/recovery_merge_index.json",
+      "sha256": "6e76c1f4e233cb64f74d5f7e0b8994e1d6a66180f1808fb095cb8c9acc8606cb"
+    },
+    "sealed_analysis": {
+      "path": "experiments/official_pusht_v14_recovery_analysis_20260901.json",
+      "sha256": "fe2b0919d6622f9aa98682c1b8ad6539a17c24e4b0d8fdcffd28dc2dead8354a"
+    }
+  },
+  "analysis_population": {
+    "rule": "Use the same model-matched raw-inventory cells as the sealed analysis: both JEPA-WM and DINO-WM rows must be valid for a trajectory-offset-menu-seed cell.",
+    "expected_model_rows": 562,
+    "expected_cells": 281,
+    "expected_trajectory_clusters": 20,
+    "scheduled_cells_per_trajectory": 15,
+    "missing_cell_rule": "Average the two model-row contrasts inside each matched cell, sum observed cell contrasts within trajectory, and divide by the fixed scheduled denominator of 15. Missing cells therefore contribute zero evidence, not zero physical outcomes."
+  },
+  "state_schema": {
+    "indices": {
+      "agent_position": [0, 1],
+      "block_position": [2, 3],
+      "block_angle": [4],
+      "agent_velocity": [5, 6]
+    },
+    "native_distance": "Euclidean norm over all seven stored state coordinates, matching the released Push-T wrapper.",
+    "circular_angle": "abs(atan2(sin(theta-goal), cos(theta-goal)))"
+  },
+  "component_outcomes": {
+    "agent_position": "negative Euclidean agent-position error to the stored goal state",
+    "block_position": "negative Euclidean block-position error to the stored goal state",
+    "block_angle_circular": "negative circular block-angle error to the stored goal state",
+    "agent_velocity": "negative Euclidean agent-velocity error to the stored goal state",
+    "terminal_coverage": "last official Push-T reward in the retained 30-step trace"
+  },
+  "effect_convention": "For every component, Delta = utility(O-selected action) - utility(P-selected action); positive favors realized-endpoint selection.",
+  "inference": {
+    "cluster_unit": "scheduled validation trajectory",
+    "bootstrap_replicates": 10000,
+    "bootstrap": "percentile bootstrap resampling the 20 trajectory aggregates",
+    "test": "two-sided exact sign-flip test over the 20 trajectory aggregates",
+    "multiplicity": "Holm adjustment across the five declared component outcomes"
+  },
+  "exact_native_squared_decomposition": {
+    "status": "descriptive",
+    "terms": [
+      "agent_position squared-error contribution",
+      "block_position squared-error contribution",
+      "raw block-angle squared-error contribution",
+      "agent-velocity squared-error contribution"
+    ],
+    "identity": "The four P-minus-O selected squared-error contribution changes must sum to d_P^2-d_O^2 for every analyzed row."
+  },
+  "score_scale_diagnostics": {
+    "status": "descriptive exploratory",
+    "quantities": [
+      "within-menu Spearman correlation between P and O scores",
+      "median absolute P-minus-O score error divided by IQR(P)",
+      "median absolute P-minus-O score error divided by IQR(O)",
+      "IQR(P)",
+      "IQR(O)",
+      "median absolute P-minus-O score error"
+    ]
+  },
+  "reporting_rule": "Report every declared component and score-scale quantity regardless of sign or significance. Label all findings post-hoc and do not reinterpret them as confirmatory evidence or causal localization."
+}

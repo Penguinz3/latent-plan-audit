@@ -1,0 +1,71 @@
+{
+  "schema_version": "PWA-PushT-v1.4-margin-instability-posthoc-spec-v1",
+  "status": "posthoc_analysis_commitment_before_result_computation",
+  "declared_date": "2026-09-04",
+  "scope": "Exploratory secondary analysis of frozen PWA-PushT-v1.4 artifacts; this is not part of the original preregistration and does not alter any frozen artifact.",
+  "source": {
+    "merge_index": "experiments/official_pusht_v14_recovery_20260831/recovery_merge_index.json",
+    "required_merge_status": "validated",
+    "primary_population": "all merge-valid rows",
+    "sensitivity_population": "merge-valid original_v1.4 rows only"
+  },
+  "unit_and_dependence": {
+    "row_unit": "one model-menu decision artifact",
+    "cluster_unit": "trajectory_id",
+    "model_strata": [
+      "official_jepa_wm",
+      "official_dino_wm"
+    ]
+  },
+  "confidence_definition": {
+    "candidate_deduplication": "Collapse candidates by physical_action_sha256 and retain the minimum predicted_score per distinct physical action.",
+    "raw_margin": "second-smallest minus smallest predicted score across distinct physical actions",
+    "historical_error_scale": "Within each model, median absolute candidate-level encoded_real_score minus predicted_score, estimated after excluding the held-out trajectory_id.",
+    "primary_confidence": "raw_margin divided by historical_error_scale; larger is more confident",
+    "fallback": "If the training median absolute error is non-positive, use the training root-mean-square error; if still non-positive, abstain."
+  },
+  "primary_target": {
+    "name": "P_O_selection_stability",
+    "definition": "predicted_choice equals encoded_real_choice",
+    "primary_metric": "AUROC of primary_confidence for selection stability",
+    "interval": "10000 trajectory-cluster bootstrap resamples",
+    "fixed_policy": "For each held-out trajectory, retain rows at or above the median primary_confidence of all same-model training trajectories.",
+    "policy_metric": "cross-fitted retained-minus-all switch-risk difference with a 10000 trajectory-cluster bootstrap interval"
+  },
+  "secondary_targets": [
+    "strict P-vs-finite-menu-G-best latent ranking reversal",
+    "strict P-vs-finite-menu-J-best latent ranking reversal",
+    "normalized P regret in G",
+    "normalized P regret in J"
+  ],
+  "comparators": [
+    "always act / random abstention at matched coverage",
+    "raw distinct-action margin",
+    "row-relative margin divided by the predicted-score 90th-minus-10th percentile spread",
+    "best predicted score",
+    "maximum softmax probability and entropy of negative predicted scores, with temperature equal to the held-out historical error scale",
+    "within-menu predicted-score 90th-minus-10th percentile spread"
+  ],
+  "reporting_gates": {
+    "actionable_decision_confidence": "Claim only if the primary AUROC 95% interval is entirely above 0.5, the cross-fitted retained-minus-all switch-risk interval is entirely below zero, and the original-only sensitivity has the same directions.",
+    "physical_risk": "Claim only if both G- and J-reversal AUROCs exceed 0.5, at least one trajectory-bootstrap interval is entirely above 0.5, and the corresponding fixed-policy risk changes have the expected direction.",
+    "otherwise": "Report a null or descriptive result; do not call the score uncertainty quantification."
+  },
+  "terminology": {
+    "allowed": [
+      "margin-based decision confidence",
+      "decision ambiguity",
+      "ranking instability",
+      "selective-planning diagnostic"
+    ],
+    "disallowed_without_additional_evidence": [
+      "calibrated epistemic uncertainty",
+      "aleatoric uncertainty estimator",
+      "general uncertainty quantification method"
+    ]
+  },
+  "randomness": {
+    "bootstrap_seed": 260904,
+    "bootstrap_resamples": 10000
+  }
+}

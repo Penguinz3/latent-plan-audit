@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+.venv/
+*.py[cod]
+paper/source/main.aux
+paper/source/main.bbl
+paper/source/main.blg
+paper/source/main.log
+paper/source/main.out
+paper/source/main.pdf
+tmp/
+output/

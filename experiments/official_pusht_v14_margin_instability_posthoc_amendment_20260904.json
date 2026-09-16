@@ -1,0 +1,57 @@
+{
+  "schema_version": "PWA-PushT-v1.4-margin-instability-posthoc-amendment-v1",
+  "status": "methodological_amendment_after_smoke_test_before_definitive_run",
+  "declared_date": "2026-09-04",
+  "supersedes_for_definitive_analysis": "experiments/official_pusht_v14_margin_instability_posthoc_spec_20260904.json",
+  "original_spec_sha256": "215986676c4df44b4821d46aebccb243ccecbd0993fe0dce2c961091c44797b0",
+  "smoke_output_sha256": "ab96ef8ddc449cdfc129096d8066379bb993884970a023f4af53755d5136ee64",
+  "reason": "Independent reviewers identified that candidate-level absolute P-O error is not the relevant deployment-time scale for a ranking decision and that the paper's model-matched population must remain primary. The definitive analysis therefore uses a prediction-only within-menu score and stricter held-out gates. No physical-outcome result informed these changes.",
+  "definitive_population": {
+    "primary": "562 rows forming 281 complete JEPA-WM/DINO-WM cells across 20 trajectory clusters",
+    "secondary": "all 577 merge-valid rows",
+    "recovery_sensitivity": "complete model-matched original_v1.4 rows only"
+  },
+  "primary_predictor": {
+    "name": "prediction_only_near_tie_score",
+    "definition": "After collapsing exact duplicate physical actions, let m=P_(2)-P_(1), let IQR(P)=Q_0.75(P)-Q_0.25(P), and set U=-log10(max(m/max(IQR(P),1e-12),1e-12)). Larger U means more ambiguity.",
+    "deployment_constraint": "U uses predicted candidate scores and action hashes only; O, G, J, recovery status, and current-row prediction errors are forbidden features."
+  },
+  "primary_target": "P and O select different actions",
+  "validation": {
+    "outer_split": "leave one complete trajectory_id out, including both models, all offsets, and all seeds",
+    "fixed_flag": "highest-U quarter using the same-model 75th-percentile cutoff computed from the other trajectories",
+    "probability_model": "fixed-ridge logistic regression with intercept, model indicator, and standardized U; all parameters fitted on other trajectories",
+    "baselines": [
+      "training-fold prevalence",
+      "training-fold model-specific prevalence",
+      "model indicator plus raw log margin"
+    ],
+    "metrics": [
+      "out-of-fold AUROC",
+      "average precision",
+      "Brier score",
+      "log loss",
+      "flagged-versus-unflagged switch-risk ratio",
+      "risk-coverage curve"
+    ],
+    "uncertainty": "10000 whole-trajectory bootstrap resamples; loss comparisons use paired trajectory-average differences"
+  },
+  "robustness": [
+    "model-stratified results",
+    "action-bounded S=max(abs(action))<=3 menus with winners recomputed after filtering",
+    "all-merge-valid coverage analysis",
+    "original-completions-only model-matched sensitivity"
+  ],
+  "physical_analysis": {
+    "status": "secondary exploratory only",
+    "G_harm": "P/O switch and G_O < G_P - 1e-10",
+    "J_harm": "P/O switch and J_O < J_P - 1e-10",
+    "continuous_harm": "max(0, G_P-G_O) and max(0, J_P-J_O)",
+    "outcomes_must_remain_separate": true
+  },
+  "claim_gates": {
+    "selector_instability": "OOF AUROC >=0.70 with trajectory-bootstrap lower bound >0.60; flagged-quarter switch-risk ratio >=1.5 with lower bound >1; model-specific AUROCs both >0.65; bounded-support and original-only directions agree; probability model improves Brier or log loss over the model-only baseline.",
+    "physical_risk": "Both G and J show higher harm in the flagged quarter and lower selective harm after abstention, with at least one whole-trajectory interval excluding no improvement. Otherwise no physical-risk, safety, or general uncertainty claim."
+  },
+  "terminology": "Even on passage, call U a prediction-score near-tie indicator or held-out selector-instability predictor, not epistemic/aleatoric uncertainty."
+}

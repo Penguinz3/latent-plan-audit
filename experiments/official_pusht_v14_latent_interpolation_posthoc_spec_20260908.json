@@ -1,0 +1,12 @@
+{
+  "analysis": "Exploratory latent-correction interpolation sweep",
+  "created_before_definitive_run": true,
+  "date": "2026-09-08",
+  "grid": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+  "interpolation": "z_lambda=(1-lambda)*predicted+lambda*realized",
+  "aggregation": "The frozen matched cell, equal-model, fixed-15-cell, trajectory-cluster hierarchy is reused; invalid, tied, or unmatched cells contribute zero evidence to both models.",
+  "outcomes": ["goal-distance utility G", "task reward J"],
+  "main_paper_inclusion_rule": "Include only a same-direction effect at at least 8 of 10 nonzero lambdas, absolute lambda-effect correlation at least .9, and matching endpoint direction in both model point estimates and the original-completions-only sensitivity.",
+  "claim_boundary": "Post-hoc exploratory analysis. It may describe a dose-response or non-monotonic selection path, but cannot establish objective misalignment causally.",
+  "new_simulation": false
+}

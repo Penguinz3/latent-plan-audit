@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software or evidence package, please cite the accompanying paper."
+title: "LatentPlanAudit"
+type: software
+authors:
+  - family-names: "Rana"
+    given-names: "Anikait"
+  - family-names: "Rana"
+    given-names: "Siddhant"
+  - family-names: "Udupi"
+    given-names: "Aditya Rao"
+date-released: 2026-09-16
+preferred-citation:
+  type: conference-paper
+  title: "Decision-Level Auditing of Latent Robot World Models"
+  authors:
+    - family-names: "Rana"
+      given-names: "Anikait"
+    - family-names: "Rana"
+      given-names: "Siddhant"
+    - family-names: "Udupi"
+      given-names: "Aditya Rao"
+  collection-title: "IROS 2026 Workshop on Physical World Models for Scaling Embodied AI"
+  year: 2026

@@ -1,0 +1,42 @@
+{
+  "schema_version": "physworldai-path-sanitization-v1",
+  "transformation": "Canonical absolute workstation roots were replaced with REPOSITORY_ROOT in reviewer copies only.",
+  "files": [
+    {
+      "path": "experiments/official_pusht_v14_near_tie_validation_20260904.json",
+      "replacement_count": 2,
+      "canonical_sha256": "a4b157226b313ea83e05ac3bb0ffcb97b97330d160e4d38bacd9e7d7af6c6af9",
+      "review_copy_sha256": "dd31df3b10bb4bd04114ae375e04c21e9fab5195d9db225b38b7ab766ec266ce"
+    },
+    {
+      "path": "experiments/official_pusht_v14_recovery_20260831/recovery_merge_index.json",
+      "replacement_count": 1155,
+      "canonical_sha256": "6e76c1f4e233cb64f74d5f7e0b8994e1d6a66180f1808fb095cb8c9acc8606cb",
+      "review_copy_sha256": "db31e91e7425d41b5bb70a7dfab565a128407eba19c89dafeea056fc3cddbc0f"
+    },
+    {
+      "path": "frozen_study/official_pusht_v14_manifest.json",
+      "replacement_count": 1,
+      "canonical_sha256": "d4a8d3563abd61f5575635db6479e069b318317ee691fca7a162e40c23fe71d8",
+      "review_copy_sha256": "844c6094ce68cf5d537a1c9d023d43d1cbb8b022b3d374e5f8bd177c8d09458f"
+    },
+    {
+      "path": "frozen_study/official_pusht_v14_recovery_analysis_20260901.json",
+      "replacement_count": 12,
+      "canonical_sha256": "fe2b0919d6622f9aa98682c1b8ad6539a17c24e4b0d8fdcffd28dc2dead8354a",
+      "review_copy_sha256": "d17745dc96bdd69194297078a67ec7b15f7f675928a1d16d38fc3fad2344593e"
+    },
+    {
+      "path": "frozen_study/official_pusht_v14_study_issuance.json",
+      "replacement_count": 19,
+      "canonical_sha256": "57a5294216275b60681546e725119bc22c83a9131add060a6ec8b72c116d15ce",
+      "review_copy_sha256": "93f5e6ab1cd0d35a85ee3eff0e777c93d16f17fbbe5a6163e096f26df88ff608"
+    },
+    {
+      "path": "frozen_study/PWA_PUSHT_V14_PREREGISTRATION.md",
+      "replacement_count": 1,
+      "canonical_sha256": "51e062e9081d4b6a728cc50bdd553702be3ad707479745b8a46beb88be8b7641",
+      "review_copy_sha256": "5aa8740dfe51a5ca0222f1217663a65e4ef01238aaf25d9a189e3650fd32a9b7"
+    }
+  ]
+}
