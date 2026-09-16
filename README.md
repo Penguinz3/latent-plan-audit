@@ -4,6 +4,7 @@ Decision-level diagnostics for testing whether correcting a latent world model's
 
 This repository accompanies **Decision-Level Auditing of Latent Robot World Models**, accepted at the **IROS 2026 Workshop on Physical World Models for Scaling Embodied AI (PWMS)**.
 
+- [Project page](https://penguinz3.github.io/latent-plan-audit/)
 - [Public workshop paper](paper/decision_level_auditing_iros_pwms.pdf)
 - [Paper source](paper/source/main.tex)
 - [Reusable audit tool](latent_score_decomposition.py)

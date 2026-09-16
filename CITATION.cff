@@ -10,6 +10,8 @@ authors:
   - family-names: "Udupi"
     given-names: "Aditya Rao"
 date-released: 2026-09-16
+repository-code: "https://github.com/Penguinz3/latent-plan-audit"
+url: "https://penguinz3.github.io/latent-plan-audit/"
 preferred-citation:
   type: conference-paper
   title: "Decision-Level Auditing of Latent Robot World Models"
