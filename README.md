@@ -6,6 +6,7 @@ This repository accompanies **Decision-Level Auditing of Latent Robot World Mode
 
 - [Project page](https://penguinz3.github.io/latent-plan-audit/)
 - [Public workshop paper](paper/decision_level_auditing_iros_pwms.pdf)
+- [Updated preprint](preprint/2026-10-09/decision_level_auditing_preprint.pdf) (Push-T and Wall, including the post-hoc state-distance diagnostic)
 - [Paper source](paper/source/main.tex)
 - [Reusable audit tool](latent_score_decomposition.py)
 - [Push-T experiment and post-hoc analyses](experiments/)
