@@ -1,0 +1,150 @@
+{
+  "pusht": {
+    "all_valid": {
+      "distinct_physical_action_instances_within_sets": 88800,
+      "duplicate_action_instances_within_sets": 0,
+      "independent_clusters": 20,
+      "model_rows": 577,
+      "ordered_candidate_instances": 88800,
+      "physical_candidate_sets": 296,
+      "ties_by_selector": {
+        "a_pred": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        },
+        "a_real": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        },
+        "a_state": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        }
+      },
+      "unique_action_count_per_set_distribution": {
+        "300": 296
+      }
+    },
+    "analysis_mask": {
+      "distinct_physical_action_instances_within_sets": 84300,
+      "duplicate_action_instances_within_sets": 0,
+      "independent_clusters": 20,
+      "model_rows": 562,
+      "ordered_candidate_instances": 84300,
+      "physical_candidate_sets": 281,
+      "ties_by_selector": {
+        "a_pred": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        },
+        "a_real": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        },
+        "a_state": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        }
+      },
+      "unique_action_count_per_set_distribution": {
+        "300": 281
+      }
+    },
+    "counting_rule": "Collapse the two models within each case/offset/seed. Deduplicate physical actions only for support counts; all 300 ordered candidates remain in every selector. Counts across different sets are candidate instances, not independent trials."
+  },
+  "wall": {
+    "all_valid": {
+      "completion_support": {
+        "cases_with_any_success": [
+          "wall_011",
+          "wall_019"
+        ],
+        "distinct_successful_physical_candidates_within_sets": 5,
+        "physical_sets_with_any_success": 4,
+        "selected_success_model_row_counts": {
+          "a_pred": 3,
+          "a_real": 8,
+          "a_state": 8
+        },
+        "success_is_strict_distance_threshold": true,
+        "threshold": 4.5
+      },
+      "distinct_physical_action_instances_within_sets": 27000,
+      "duplicate_action_instances_within_sets": 0,
+      "independent_clusters": 30,
+      "model_rows": 179,
+      "ordered_candidate_instances": 27000,
+      "physical_candidate_sets": 90,
+      "ties_by_selector": {
+        "a_pred": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        },
+        "a_real": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        },
+        "a_state": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        }
+      },
+      "unique_action_count_per_set_distribution": {
+        "300": 90
+      }
+    },
+    "analysis_mask": {
+      "completion_support": {
+        "cases_with_any_success": [
+          "wall_011",
+          "wall_019"
+        ],
+        "distinct_successful_physical_candidates_within_sets": 5,
+        "physical_sets_with_any_success": 4,
+        "selected_success_model_row_counts": {
+          "a_pred": 3,
+          "a_real": 8,
+          "a_state": 8
+        },
+        "success_is_strict_distance_threshold": true,
+        "threshold": 4.5
+      },
+      "distinct_physical_action_instances_within_sets": 26100,
+      "duplicate_action_instances_within_sets": 0,
+      "independent_clusters": 29,
+      "model_rows": 174,
+      "ordered_candidate_instances": 26100,
+      "physical_candidate_sets": 87,
+      "ties_by_selector": {
+        "a_pred": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        },
+        "a_real": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        },
+        "a_state": {
+          "maximum_exact_minimum_tie_count": 1,
+          "model_rows_with_distinct_physical_ties": 0,
+          "model_rows_with_exact_ties": 0
+        }
+      },
+      "unique_action_count_per_set_distribution": {
+        "300": 87
+      }
+    },
+    "counting_rule": "Collapse the two models within each case/offset/seed. Deduplicate physical actions only for support counts; all 300 ordered candidates remain in every selector. Counts across different sets are candidate instances, not independent trials."
+  }
+}

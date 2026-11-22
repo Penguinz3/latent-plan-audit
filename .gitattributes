@@ -1,0 +1,6 @@
+# Preserve the bytes of released source and evidence with recorded SHA-256 hashes.
+*.pdf binary
+experiments/** -text whitespace=cr-at-eol
+scripts/** -text whitespace=cr-at-eol
+paper/2026-10-22/** -text whitespace=cr-at-eol
+reproduction/** -text whitespace=cr-at-eol

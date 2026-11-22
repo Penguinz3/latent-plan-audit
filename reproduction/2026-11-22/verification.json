@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-22",
+  "status": "PASS",
+  "scope": "Saved-evidence numerical recomputation and focused source tests in a relocated copy outside the original project directory",
+  "runtime": {
+    "python": "3.12.13",
+    "numpy": "2.5.1",
+    "platform": "Windows",
+    "blas_threads": 1,
+    "fresh_dependency_installation": false
+  },
+  "source_test_count": 19,
+  "standalone_invariant_checks_passed": true,
+  "packaged_checksums_verified_before_recomputation": true,
+  "verification": {
+    "status": "PASS",
+    "numerical_sha256": {
+      "summary.csv": "3eb5cb00fd7be3f9e01a6f1e6277b00302d0e1549c7d8c8845fba59570bb09c6",
+      "row_effects.csv": "0afb8e9b72f9eb66e74b0bfbd821270a03e2dfba8fadca1cea08b201aadd9440",
+      "cluster_effects.csv": "17f09b049cad1efec9dc2279b1b6e6b2f7644817c6cb62b599255b40fc6bd71a",
+      "selection_disagreements.csv": "6641ec3cb934ed943c6f541fd0fb56c805cfff33fe368528673d7320ff166365",
+      "physical_support.json": "c638163e16e295cba047793736d377d23193809f6f852225cc2d508e55a77e5b",
+      "original_results.json": "9eadc6c25e524fc9d22210bf59d7e8e04d781a1e00064491971df33d17a3502a"
+    },
+    "structured_numerical_results_equal": true,
+    "all_analysis_inputs_within_relocated_package": true,
+    "whole_results_json_byte_identity_claimed": false
+  },
+  "models_or_simulators_rerun": false
+}

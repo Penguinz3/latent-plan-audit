@@ -1,0 +1,513 @@
+\documentclass{article}
+
+% The workshop accepts any template. Retain CoRL layout without implying
+% publication in the main-conference proceedings.
+\usepackage[preprint]{corl_2026}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,booktabs,graphicx,microtype}
+\hypersetup{pdfauthor={Anikait Rana, Siddhant Rana, Aditya Rao Udupi},
+  pdftitle={Decision-Level Auditing of Latent Robot World Models},
+  pdfsubject={CoRL 2026 Workshop on Modeling Uncertainty in Robotic World Models (UncertainWM)}}
+
+\title{Decision-Level Auditing\\of Latent Robot World Models}
+\author{Anikait Rana \qquad Siddhant Rana \qquad Aditya Rao Udupi\\
+Independent Researchers}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A near tie between predicted action scores may signal an unstable choice, but
+does it identify a physically poor decision? We introduce a decision-level
+audit of released JEPA-WM and DINO-WM planners that replaces predicted terminal
+latents with simulator-realized endpoint encodings while holding each
+300-sequence candidate set and latent objective fixed. On 562 model-matched Push-T
+decisions from 20 trajectory clusters, a post-hoc, prediction-only near-tie
+score discriminates selector changes with AUROC $.714$ (95\%
+trajectory-bootstrap CI $[.665,.762]$). Thresholds fitted on other trajectories
+flag decisions that switch 82.4\% of the time versus 51.0\% otherwise, but do
+not identify higher physical regret. The Push-T-frozen score transfers to Wall
+without retuning (descriptive AUROC $.727$), although raw margin performs
+similarly ($.735$). Endpoint substitution does not establish aggregate
+physical improvement. Separate post-hoc state-distance and component analyses
+show why distance headroom and block progress need not agree with whole-state
+distance or cumulative reward. The audit separates action-ranking
+sensitivity from physical consequence: near ties are a candidate verification
+trigger, not a validated physical-risk or epistemic-uncertainty estimate.
+\end{abstract}
+
+\keywords{robot world models, decision-level evaluation, ranking instability, selective prediction, latent planning}
+
+\section{Introduction}
+
+A small prediction change can reverse a nearly tied action ranking without
+causing a physical failure. Conversely, a stable ranking can consistently
+favor a poor action. Evaluating a planner-facing diagnostic therefore requires
+separating \emph{selector instability} from \emph{physical regret}.
+
+We introduce a matched audit: score the same candidate actions using predicted
+terminal latents and simulator-realized endpoint encodings, then compare the
+physical outcomes of the selected actions. Each candidate is a complete action
+sequence; its endpoint is the simulator state after all 30 physical steps.
+Re-encoding uses the corresponding planner's existing frozen visual and
+proprioceptive encoders. The candidate set is the fixed, ordered collection of 300 such sequences.
+The unchanged latent objective can
+still misrank realized states, so endpoint substitution is not a physical oracle.
+
+We ask three questions: can predicted score margins flag selector changes;
+do those flags identify greater physical regret; and does the fixed rule
+transfer to another environment? Our contributions are the matched audit,
+trajectory-held-out evaluation of a simple near-tie diagnostic, and its frozen
+transfer from Push-T to Wall. The result is a useful separation: near ties
+identify ranking sensitivity, but the evaluated flags do not establish poorer
+physical decisions.
+
+\paragraph{Relation to prior work.}
+Value-aware learning and objective-mismatch analyses distinguish predictive
+accuracy from decision utility~\citep{pmlr-v54-farahmand17a,pmlr-v120-lambert20a}.
+Probabilistic dynamics methods such as PETS model uncertainty and propagate it
+through planning~\citep{chua2018pets}; calibrated value-aware learning studies
+the statistical properties of model-learning losses~\citep{pmlr-v267-voelcker25a}.
+Our score instead summarizes a deterministic candidate set's decision margin.
+Selective prediction evaluates performance as coverage changes~\citep{geifman2019selective};
+we adopt that evaluation idea while keeping selector-switch rate separate from
+physical regret. We test the distinction between these targets rather than
+propose a new probabilistic world model. Unlike training-time physical
+grounding~\citep{liu2026grounded}, our audit leaves the released models unchanged.
+
+\section{Matched audit and prediction-only diagnostic}
+
+\subsection{Endpoint substitution holds the scoring interface fixed}
+
+Let $a_i$ be candidate action sequence $i$, $\hat z_i$ its predicted terminal
+representation, $z_i$ the same planner's encoding of its realized endpoint,
+and $z_g$ its goal encoding. Superscripts $v$ and $p$ denote visual and
+proprioceptive components, of dimensions $d_v$ and $d_p$. The released cost is
+\begin{equation}
+ \begin{aligned}
+ C(z,z_g)&=\frac{\|z^v-z_g^v\|_2^2}{d_v}
+           +0.1\frac{\|z^p-z_g^p\|_2^2}{d_p},\\
+ C_{\mathrm{pred}}(i)&=C(\hat z_i,z_g),\qquad
+ C_{\mathrm{real}}(i)=C(z_i,z_g).
+ \end{aligned}
+ \label{eq:cost}
+\end{equation}
+The lowest cost selects each sequence:
+$i_{\mathrm{pred}}=\arg\min_i C_{\mathrm{pred}}(i)$,
+$i_{\mathrm{real}}=\arg\min_i C_{\mathrm{real}}(i)$,
+$a_{\mathrm{pred}}=a_{i_{\mathrm{pred}}}$, and
+$a_{\mathrm{real}}=a_{i_{\mathrm{real}}}$.
+
+We evaluate physical outcomes separately. Distance utility is
+$U_{\mathrm{dist}}(a_i)=-D(s_i,s_g)$, where $D$ is the native distance
+between realized terminal state $s_i$ and goal state $s_g$.
+$R_{\mathrm{task}}(a_i)$ is cumulative official coverage reward on Push-T
+or binary completion on Wall. For either higher-is-better outcome $Y$,
+the reduction in within-set regret is
+\begin{equation}
+ \Delta^Y=Y(a_{\mathrm{real}})-Y(a_{\mathrm{pred}}).
+ \label{eq:recovery}
+\end{equation}
+Positive $\Delta^Y$ favors realized-endpoint selection. Comparing
+$Y(a_{\mathrm{pred}})$ with the exact candidate-set mean tests whether predicted
+scoring is useful relative to uniform selection. These are separate questions.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{audit_overview.pdf}
+\caption{The same fixed candidates, initial state and goal feed all selectors.
+Endpoint substitution changes only the input to the fixed latent cost.
+The separate hindsight state selector bypasses the learned representation and
+objective together (Section~\ref{sec:state}); it is not a deployable policy.
+A changed choice is not automatically a physical failure.}
+\label{fig:audit}
+\end{figure}
+
+\subsection{Near ties measure decision ambiguity, not model uncertainty}
+
+Collapse exact duplicate physical action sequences, retaining the minimum
+predicted cost per distinct sequence. Let $c_{(1)}$ and $c_{(2)}$ be the
+lowest two remaining predicted costs. Define the ambiguity score $A$ by
+\begin{equation}
+ \begin{aligned}
+ m&=\frac{c_{(2)}-c_{(1)}}{\max\{\operatorname{IQR}(C_{\mathrm{pred}}),\epsilon\}},\\
+ A&=-\log_{10}\!\left(\max\{m,\epsilon\}\right),\qquad \epsilon=10^{-12}.
+ \end{aligned}
+ \label{eq:near}
+\end{equation}
+Larger $A$ means a closer predicted race relative to within-set score spread.
+The score uses predicted costs and action identity only; it does not use
+realized costs, current-record prediction errors, or physical outcomes.
+IQR normalization is not an estimate of model-error variance.
+
+The motivation is algebraic. Write
+$\delta_i=C_{\mathrm{pred}}(i)-C_{\mathrm{real}}(i)$.
+If $i_{\mathrm{pred}}$ beats candidate $b$ by predicted margin
+$g=C_{\mathrm{pred}}(b)-C_{\mathrm{pred}}(i_{\mathrm{pred}})>0$,
+their order reverses after substitution exactly when
+$\delta_b-\delta_{i_{\mathrm{pred}}}>g$.
+A margin supplies neither a perturbation distribution nor the physical
+value of either action. Within either latent block, dimension $d$ and
+error $e_i=\hat z_i-z_i$ give the exact cost difference
+$2(z_i-z_g)^\top e_i/d+\|e_i\|_2^2/d$.
+The two blocks combine with the weights in Eq.~\ref{eq:cost}. This explains
+score movement algebraically, not physical behavior causally.
+
+\subsection{Separate validation targets}
+
+\paragraph{Selector instability.}
+The primary diagnostic target is the event
+$a_{\mathrm{pred}}\ne a_{\mathrm{real}}$. In Push-T, every fitted
+threshold or probability model excludes the evaluated trajectory, including
+both models, all offsets, and all seeds. Each leave-one-trajectory-out (LOTO)
+fold sets a model-specific 75th-percentile $A$ threshold on its 19 training
+trajectories. A fixed-ridge logistic model (penalty $10^{-4}$, unpenalized
+intercept) uses model identity and training-fold-standardized $A$. Baselines
+use training-fold prevalence, model-specific prevalence, and model identity
+plus negative log raw margin. The raw-score AUROC and the fitted probability
+model's AUROC are reported separately.
+
+\paragraph{Physical consequence.}
+For candidate sets with varying physical outcomes, we evaluate the predicted selector's
+normalized regret
+\begin{equation}
+ \mathcal{R}_{\mathrm{pred}}^Y=
+ \frac{\max_iY(a_i)-Y(a_{\mathrm{pred}})}
+      {\max_iY(a_i)-\min_iY(a_i)}.
+ \label{eq:regret}
+\end{equation}
+Regret normalization is undefined when all candidate outcomes are equal.
+Flagged-minus-unflagged
+regret tests whether the screen identifies poorer original decisions. This
+differs from asking whether replacing the predicted choice with the
+realized-endpoint choice would worsen an outcome. That is a hypothetical
+intervention, not risk of the deployed predicted selector. Selective evaluation retains scores below the model-specific
+25th, 50th, and 75th percentiles learned on the other trajectories, plus all
+records at full coverage. We report achieved coverage, selector-switch rate,
+and physical regret separately.
+
+The near-tie analysis is post-hoc. Its definitive protocol followed an initial
+smoke test and a methodological amendment, rather than a preregistration before
+the original study. Bootstrap intervals use 10,000 whole-trajectory resamples;
+they condition on the chosen score and saved out-of-fold predictions and do
+not refit the cross-validation pipeline or account for post-hoc score choice.
+
+\section{Study design and evidence accounting}
+
+We use released JEPA-WM and DINO-WM checkpoints~\citep{terver2026drives,pmlr-v267-zhou25t}.
+Both use DINOv2 visual features; two predictors are not two independent
+representation families. Every record contains 300 initially sampled action sequences,
+each consisting of six model actions expanded to 30 physical steps. All
+comparisons are within frozen candidate sets, not optimized CEM populations or
+closed-loop rollouts.
+
+\paragraph{Push-T.}
+A planar agent pushes a T-shaped block toward a target pose. The issued
+schedule crosses 20 validation trajectories, five outcome-blind offsets,
+three proposal seeds, and two predictors (600 model records). We use negative
+official terminal-state distance $U_{\mathrm{dist}}$ and cumulative coverage reward $R_{\mathrm{task}}$.
+$U_{\mathrm{dist}}$ is negative Euclidean distance over seven coordinates: agent position, block
+position, raw block angle, and agent velocity. It is not block-pose error
+alone. Its goal is generated by replaying the 30-step dataset segment.
+$R_{\mathrm{task}}$ instead sums 30 official rewards, each
+$\min\{\mathrm{coverage}/0.95,1\}$, for overlap with the environment's fixed
+target pose $(256,256,\pi/4)$. That target is not reassigned to the replay
+endpoint. Thus the distance goal and coverage target have different
+definitions; improving one outcome need not improve the other.
+
+The physical-comparison mask contains 562 valid model records in 281 paired
+cells. Overall, 577 records pass the artifact, complete-rollout, finite-score
+and selector checks; validity does not mean task success. For the original physical contrasts, each cell
+averages both models, each trajectory uses its fixed 15-cell denominator,
+and invalid or unmatched cells contribute zero contrast evidence, not physical
+outcomes of zero. For example, 14 matched cells each contributing $+1$ give a
+trajectory contrast of $14/15$, not an observed-cell mean of $1$. This changes
+the estimand and does not remove missingness bias. Inference uses 10,000 trajectory-bootstrap draws and exact
+trajectory sign flips, assuming sign symmetry. Holm correction is separate
+for the two realized-minus-predicted outcomes and the two
+predicted-minus-uniform outcomes. Nineteen of
+20 trajectories have at least 12 matched cells; the remaining trajectory stays
+under the frozen evidence rule. The exploratory diagnostic instead reports
+valid-row rates and AUROCs with trajectory-clustered intervals.
+
+An outcome-blind infrastructure amendment retried 169 CUDA-cascade failures
+before scientific-array inspection, retaining 23 invalid scheduled records.
+Because this departed from the locked no-retry rule, the study is explicitly
+recovery-augmented. Original attempts, recovery receipts, and an
+original-completions-only sensitivity remain retained. The original-only subset
+has 408 matched records and fails the original support requirement. Appendix~\ref{app:protocol}
+states that rule, recovery eligibility, and the remaining missingness caveat.
+
+\paragraph{Wall transfer.}
+In a separate simulated navigation environment, 30 case seeds, three candidate set
+seeds, and two task-specific predictors yield 180 issued rows. There are
+179 verified valid rows and one retained scientific-validation failure. Its
+compact failure ledger does not establish the specific failed criterion. Primary
+physical effects use 174 rows from 29 complete six-row cases, exceeding the
+prespecified minimum of 27; failed outcomes are not imputed. Each case
+averages its candidate sets and predictors before 10,000 whole-case bootstrap draws
+and 100,000 paired sign flips with a $+1$ correction. Native utility is
+negative terminal distance; binary success uses the released distance
+threshold of 4.5. Two-outcome Holm families are defined as in Push-T.
+
+The Wall plan and near-tie rule were frozen before Wall outcomes. We apply
+the Push-T-derived thresholds $A\ge1.289908$ for JEPA-WM and
+$A\ge1.461432$ for DINO-WM without retuning. Switch AUROCs use all 179 valid
+rows; the physical flagged comparison uses complete cases. Wall uses stable
+first-minimum selection. Push-T's strict-selection validity rules can abstain
+on ambiguous minima, so this transfer is not a pooled identical-protocol
+estimate. Both environments use common candidates across the two selectors.
+
+\section{Results}
+
+\subsection{Near ties discriminate switching, not higher original regret}
+
+On 562 matched Push-T rows, 331 actions switch. The raw near-tie score has
+AUROC $.714$ (95\% CI $[.665,.762]$); the fitted LOTO probability model has
+AUROC $.706$. The held-out quartile rule flags 142/562 rows (25.3\%): switch
+rates are 82.4\% versus 51.0\%, a ratio of 1.62 ($[1.44,1.82]$).
+
+\begin{table}[t]
+\centering\small
+\caption{Push-T out-of-fold switch-probability models on 562 matched rows.
+Lower Brier score and log loss are better. Normalization adds little beyond
+the raw-margin comparator; all models target switching, not physical risk.}
+\label{tab:probability}
+\begin{tabular}{lrrr}
+\toprule
+Predictor & AUROC & Brier score & Log loss \\
+\midrule
+Training-fold prevalence & $.410$ & $.243$ & $.679$ \\
+Model-specific prevalence & $.451$ & $.243$ & $.680$ \\
+Model identity + raw log margin & $.701$ & $.215$ & $.624$ \\
+Model identity + near-tie score $A$ & $.706$ & $.214$ & $.622$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Adding $A$ to model identity improves Brier score from $.243$ to $.214$;
+the paired trajectory-average loss-difference interval is $[-.043,-.016]$.
+However, improvement over raw log margin is not established (Brier-difference
+CI $[-.0054,.0037]$). Prevalence baselines vary across held-out folds, so their
+pooled AUROC need not be $.5$ even without within-fold discrimination.
+
+Raw-score AUROCs are $.734$ for JEPA-WM and $.691$ for DINO-WM. Recomputing
+winners with maximum absolute normalized action coordinate at most $3$ gives $.696$;
+the 408 model-matched original-completion rows give $.709$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{selective_diagnostic.pdf}
+\caption{Push-T selective evaluation from the frozen post-hoc analysis.
+Thresholds are set on other trajectories; the horizontal axis uses achieved
+coverage. Retaining less ambiguous candidate sets lowers selector-switch rate (left),
+but the original selector's physical regret does not improve consistently
+(right). Curves are descriptive valid-row means, not confidence bands or
+measured benefits from a deployed fallback. Lower vertical-axis values are better.}
+\label{fig:selective}
+\end{figure}
+
+The physical check does not support labeling the flag as physical risk.
+Flagged-minus-unflagged normalized regret for predicted selection is $-.007$
+for distance utility (95\% CI $[-.039,.026]$) and $-.056$ for task reward
+($[-.143,.026]$).
+At roughly 25\% retained coverage, switch rate drops from $.589$ to $.357$,
+but mean normalized distance regret is $.233$ versus $.222$ at full coverage,
+and mean normalized reward regret is $.526$ versus $.455$
+(Fig.~\ref{fig:selective}). Thus a cleaner
+switch-rate curve is not evidence of a better physical decision policy.
+This does not establish independence between regret and ambiguity.
+
+\subsection{Prospective transfer preserves the limited target}
+
+Wall selectors switch in 100/179 valid rows (55.9\%). The Push-T-frozen score
+has descriptive pooled AUROC $.727$, compared with $.735$ for negative raw
+margin. The transferred normalized score therefore does not outperform the
+simple baseline. These point estimates do not establish probability calibration
+under environment shift.
+
+On complete Wall cases, the frozen thresholds flag 35/174 rows; 19 cases
+contain both flagged and unflagged rows. The paired flagged-minus-unflagged
+effect in the predicted-selected signed native gap is $+.393$
+(95\% case-bootstrap CI $[-1.704,2.627]$). This gap is
+$\min_i D(s_i,s_g)-D(s_{i_{\mathrm{pred}}},s_g)\le0$, so more negative means worse selection. Its sign
+convention differs from positive regret in Eq.~\ref{eq:regret}. The comparison
+does not establish greater physical shortfall in flagged rows.
+
+\subsection{Endpoint substitution is not established physical recovery}
+
+\begin{table}[t]
+\centering\small
+\caption{Original physical comparisons. Each cell reports an effect,
+unadjusted 95\% cluster-bootstrap interval, and within-family Holm-adjusted
+sign-flip value $p_H$. Positive favors the first named selector. Push-T uses
+20 trajectories with the fixed denominator; Wall uses 29 complete cases.}
+\label{tab:effects}
+\begin{tabular}{@{}p{.18\linewidth}p{.37\linewidth}p{.37\linewidth}@{}}
+\toprule
+Outcome & Realized minus predicted & Predicted minus uniform\\
+\midrule
+\raggedright Push-T distance utility & $-5.30$ [$-9.64,-.71$];\newline $p_H=.0755$
+ & $+48.70$ [$40.47,56.43$];\newline $p_H=7.63\!\times\!10^{-6}$\\
+\raggedright Push-T cumulative reward & $+.042$ [$-.176,.240$];\newline $p_H=.701$
+ & $+.761$ [$.420,1.117$];\newline $p_H=4.02\!\times\!10^{-4}$\\
+\raggedright Wall distance utility & $-.254$ [$-.909,.364$];\newline $p_H=.923$
+ & $+12.363$ [$10.900,13.755$];\newline $p_H=2.00\!\times\!10^{-5}$\\
+\raggedright Wall completion & $+.0287$ [$0,.0805$];\newline $p_H=.923$
+ & $+.0170$ [$0,.0454$];\newline $p_H=.501$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Predicted scoring beats uniform on both Push-T outcomes and Wall native
+utility, but endpoint substitution does not pass the respective two-outcome
+tests (Table~\ref{tab:effects}). In Push-T, the adverse distance-utility estimate is
+descriptive evidence worth explaining, not a demonstrated null effect. Its
+marginal bootstrap interval excludes zero whereas the separate Holm-adjusted
+sign-flip test does not pass $.05$; these are not an inverted CI/test pair.
+The reward-effect interval permits effects in either direction, so neither equivalence
+nor guaranteed harm follows. The negative distance-utility pattern is descriptively larger
+for JEPA-WM, without a preregistered model-interaction claim.
+
+In Wall, only two of 29 complete cases contain any successful candidate.
+Predicted selection succeeds in 3/174 records and realized-endpoint selection
+in 8/174. Repeated rows are not
+independent success trials. This sparsity limits the success endpoint and
+does not establish success equivalence.
+
+Across all 577 valid Push-T records, 337 selectors switch. Only 48
+and 38 switches reverse the strict predicted-versus-distance-best and
+predicted-versus-reward-best pairwise ordering in the recovery-aligned direction.
+These are specific best-candidate pair diagnostics, not counts of all
+physically beneficial switches. They use the broader diagnostic population,
+not the 562-row mask used for the main near-tie evaluation.
+
+\subsection{Physical-component and score-scale checks}
+
+\begin{table}[t]
+\centering\small
+\caption{Post-hoc component effects: realized minus predicted selection.
+All component utilities are higher-is-better. The
+five-outcome family was specified before inspecting component outcomes.
+Intervals are unadjusted; $p_H$ corrects across all five components. These
+are separate utilities, not additive contributions to mean unsquared distance.}
+\label{tab:components}
+\begin{tabular}{lrr}
+\toprule
+Component utility & Effect [95\% CI] & $p_H$ \\
+\midrule
+Agent position & $-1.817$ [$-4.564,.971$] & $.232$ \\
+Block position & $+1.267$ [$.480,2.176$] & $.0203$ \\
+Circular block angle & $+.0325$ [$.0197,.0471$] & $.000210$ \\
+Agent velocity & $-5.809$ [$-10.523,-1.187$] & $.0957$ \\
+Terminal coverage & $+.00901$ [$.00035,.01696$] & $.110$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Push-T's whole-state distance combines unlike coordinates. To avoid reading an
+adverse distance-utility effect as uniformly worse manipulation, a separate post-hoc analysis uses
+negative Euclidean position/velocity errors, negative circular angle error,
+and final-step coverage. Under the same fixed trajectory aggregation,
+block-position and circular-orientation errors improve, while agent-state
+point estimates worsen (Table~\ref{tab:components}). Circular angle is not
+the raw-angle coordinate used by native distance. Agent-state and terminal-coverage effects
+do not pass the five-component Holm threshold.
+
+On the descriptive squared-distance scale, the mean component errors at the
+predicted-selected endpoint minus those at the realized-selected endpoint
+are $-477.2$ for agent position, $+79.2$ for block position,
+$+.226$ for raw angle, and $-1497.0$ for agent velocity. Their row-wise sum
+is exact (maximum residual $3.64\times10^{-11}$). These native-coordinate
+contributions are not unit-invariant and do not add to the mean unsquared
+distance-utility effect. They locate the measured trade-off; they do not causally identify
+an encoder, predictor, or objective defect.
+
+Prediction error is material relative to candidate set spread. Across the 562 matched
+rows, the trajectory-weighted mean within-candidate set $\rho(C_{\mathrm{pred}},C_{\mathrm{real}})$ is $.858$
+(95\% CI $[.839,.875]$). The mean per-candidate set median $|C_{\mathrm{pred}}-C_{\mathrm{real}}|$ is $.0505$;
+mean per-candidate set ratios to predicted- and realized-score IQR are $.339$ and
+$.316$. Broad rank agreement can therefore coexist with frequent top-choice
+changes. These offline scale summaries are not inputs to $A$ and are not
+uncertainty estimates.
+
+\subsection{A separate hindsight state-distance diagnostic}
+\label{sec:state}
+
+To examine what remains after terminal prediction correction, a later post-hoc
+analysis chooses $i_{\mathrm{state}}=\arg\min_i D(s_i,s_g)$, where $D$ is the
+stored native terminal-state distance. It evaluates both physical outcomes
+at that same selected sequence. This selector uses realized simulator outcomes,
+jointly bypasses the learned encoding and latent objective, and is not
+deployable. It neither estimates model uncertainty nor identifies which
+component causes the remaining regret.
+
+Using the original paired-cell and complete-case masks, it improves distance
+utility relative to realized-latent selection by $69.814$ in Push-T
+(unadjusted 95\% trajectory-bootstrap CI $[62.326,77.641]$) and $5.643$ in
+Wall ($[3.861,7.664]$). Improvement in its selected distance is guaranteed by
+construction; the magnitudes describe fixed-set headroom. Push-T cumulative
+reward instead declines by $0.838$ ($[-1.222,-0.460]$). The different target
+definitions and temporal objectives prevent assigning that trade-off to an
+encoder defect or a single causal mechanism.
+
+On Wall it adds no observed completions beyond realized-latent selection:
+both select success in 8/174 repeated model records, versus 3/174 for predicted
+selection. Completion thresholds the same distance minimized by the hindsight
+selector, and only two complete cases contain a successful candidate. Equal
+observed completion therefore reflects captured candidate support, not
+population equivalence. The new analysis uses 10,000 whole-cluster resamples
+and no new $p$-values; it does not replace the original inference in
+Table~\ref{tab:effects}. Appendices~\ref{app:original} and~\ref{app:models}
+separately report original inference and all model-specific new contrasts.
+
+\section{Implications, limitations, and reproducibility}
+
+A possible use, not a validated policy, is a \emph{candidate verification trigger}: identify where
+additional evaluation might change a latent selector's answer. The audit does
+not establish which verifier or fallback to use, how much it should cost, or
+whether it would improve outcomes. A prospective intervention must measure
+physical benefit at a fixed verification budget, not just fewer selector
+disagreements. Likewise, a small margin is not evidence of epistemic or
+aleatoric uncertainty: even a perfectly known deterministic objective can
+contain near ties.
+
+Scope remains limited to short open-loop initial candidate sets in one manipulation
+and one navigation environment, related DINOv2-based predictors, and simulator
+outcomes. There is no independent representation-family study, optimized-CEM
+evaluation, hardware validation, or safety guarantee. Raw margin remains a
+competitive comparator. Push-T recovery augmentation, finite cluster counts,
+post-hoc diagnostic selection, conditional bootstrap intervals, and sparse
+Wall success constrain the conclusions.
+The new retrospective state-selector analysis is also post-hoc and does not
+supply independent validation of the near-tie screen or identify a faulty
+encoder or objective.
+
+The retained evidence includes candidate scores, physical outcomes, action
+identities, selector indices, protocol versions, and failure records. A compact
+Wall CPU recomputation artifact contains 53,700 model--candidate records and
+recomputes saved selectors, complete-case effects, and fixed-score AUROCs
+without GPU inference. This is analysis reproducibility, not reproduction of
+training or a full planning pipeline. The new diagnostic package remains
+locally retained for release; we do not claim that it has already been
+publicly uploaded. Appendix~\ref{app:config} records preprocessing, action
+normalization, dataset/goal construction, and source/checkpoint bindings;
+Appendix~\ref{app:repro} states the recomputation scope and remaining gaps.
+AI tools assisted implementation and
+drafting; the authors are responsible for verification and all claims.
+
+\section{Conclusion}
+
+Near-tie scores can identify action choices that are sensitive to realized
+endpoint substitution without identifying higher physical regret. Push-T
+held-out evaluation and a frozen Wall transfer support the former association,
+not a physical-risk claim or superiority over raw margin. Decision-aware
+uncertainty evaluation should specify the event being predicted and separately
+test its physical consequences.
+
+\clearpage
+\bibliography{references}
+\clearpage
+\input{audit_appendices}
+\end{document}

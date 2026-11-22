@@ -7,9 +7,10 @@ authors:
     given-names: "Anikait"
   - family-names: "Rana"
     given-names: "Siddhant"
-  - family-names: "Udupi"
-    given-names: "Aditya Rao"
-date-released: 2026-09-16
+  - family-names: "Rao Udupi"
+    given-names: "Aditya"
+version: "2026.11.22"
+date-released: 2026-11-22
 repository-code: "https://github.com/Penguinz3/latent-plan-audit"
 url: "https://penguinz3.github.io/latent-plan-audit/"
 preferred-citation:
@@ -20,7 +21,7 @@ preferred-citation:
       given-names: "Anikait"
     - family-names: "Rana"
       given-names: "Siddhant"
-    - family-names: "Udupi"
-      given-names: "Aditya Rao"
+    - family-names: "Rao Udupi"
+      given-names: "Aditya"
   collection-title: "IROS 2026 Workshop on Physical World Models for Scaling Embodied AI"
   year: 2026

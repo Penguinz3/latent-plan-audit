@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "study_id": "wall-initial-audit-20260910",
+  "design_frozen_at_utc": "2026-09-10T23:44:00.277625+00:00",
+  "scope": "Second-environment extension of initial-menu latent endpoint audit; CEM optimization deferred.",
+  "evidence_access_at_freeze": "No Wall evidence or engineering outcomes inspected.",
+  "execution_ready": false,
+  "models": [
+    "jepa",
+    "dino"
+  ],
+  "independent_unit": "case_id",
+  "case_seed_range": [
+    2026091100,
+    2026091129
+  ],
+  "menu_seeds": [
+    1,
+    2,
+    3
+  ],
+  "excluded_engineering_seeds": [
+    2026091001,
+    2026091002
+  ],
+  "candidates": 300,
+  "horizon": 6,
+  "frameskip": 5,
+  "physical_action_dim": 2,
+  "model_action_dim": 10,
+  "initial_menu": "Gaussian zero-mean unit-variance normalized actions; candidate0 equals mean zero action; no outcome-based filtering or clipping. RNG implementation frozen in execution binding before evidence.",
+  "physical_actions": "Unpack six10Dactions tothirty2Dactions; apply official Wall action standard deviation andmean.",
+  "objective": "Official terminal visual latent MSE plus0.1proprio latentMSE; O replaces predicted endpoint with encoded realized endpoint.",
+  "tie_breaking": "First minimum index, exact cost ordering; approximate ties descriptive only.",
+  "primary_contrasts": {
+    "recovery_family": [
+      "O_minus_P_negative_terminal_state_distance",
+      "O_minus_P_native_terminal_success"
+    ],
+    "usefulness_family": [
+      "P_minus_uniform_negative_terminal_state_distance",
+      "P_minus_uniform_native_terminal_success"
+    ]
+  },
+  "aggregation": "Use cases with allsixverifiedrows; within each case average3menuseedsand2predictors, thenequalcase mean. P-uniform comparesP outcomeagainstmeanofall300menuoutcomes.",
+  "primary_support_gate": "Atleast27of30completecaseclusters; otherwise reportincompleteexploratoryevidence. Allmissingnessreported; completecaseresultsconditiononvalidity.",
+  "missingness": "No fabricatedphysicaloutcomes or outcomedrivencasereplacement. Preserve everyattempt and allscientificfailures.",
+  "confidence_intervals": {
+    "method": "percentile bootstrap wholecaseclusters",
+    "resamples": 10000,
+    "seed": 20260911,
+    "coverage": 0.95,
+    "multiplicity": "Intervals marginal, not simultaneous."
+  },
+  "tests": {
+    "method": "two-sided paired signflip; exactenumerationwhen20orfewercompletecases,100000MonteCarlootherwise",
+    "seed": 20260912,
+    "monte_carlo_correction": "(extreme+1)/(draws+1)",
+    "assumption": "Sign-flip calibration assumes symmetry/exchangeability of paired case-level effects under the null.",
+    "multiplicity": "Holm separatelywithineachprespecifiedtwo-outcomefamily; per-modelcontrastsdescriptive."
+  },
+  "diagnostic": {
+    "frozen_file": "frozen_near_tie.json",
+    "frozen_sha256": "a1dfc942df74b8fdf89d99ad48cfcc9ab5d58a88dc7b5788684187bbaaff231d",
+    "test": "RawscoreAUROCforP/Oswitches; prespecifiedrawmargincomparator; fixedper-model75%PushTthresholds, noWallrefitting.",
+    "physical_risk": "Report regretassociationseparately; donotlabelswitchpredictionphysicalrisk."
+  },
+  "execution_policy": {
+    "per_row_atomic_completion": true,
+    "resume_completed": "Skip onlyverifiedcompletedresults withmatchinginputandoutputhashes.",
+    "crash_resume": "Retainattempt andreruninterruptedrowonlywhenorphanchildisnotactive; never silentlyretry numericalfailures.",
+    "partner_partition": "Wholecasegroups; bothpredictorsandthreemenuseedsstayonehost. No partnerassignment until explicit shardissued.",
+    "pause": "Respect intentionalPAUSEfile; noautomaticresumeofintentionalpause."
+  },
+  "source": {
+    "official_repository": "https://github.com/facebookresearch/jepa-wms",
+    "official_commit": "13cf1d9c7e476f53c17714d2e0f1dc239a883ce0",
+    "models_repository": "https://huggingface.co/facebook/jepa-wms",
+    "models_revision": "9b9c41ef249466630dbf1a20e78391865d07b3b9"
+  }
+}

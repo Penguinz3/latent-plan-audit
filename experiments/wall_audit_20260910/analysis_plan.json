@@ -1,0 +1,51 @@
+{
+  "analysis_name": "Wall v1 exploratory decision audit analysis",
+  "status": "frozen_before_wall_outcomes",
+  "production_manifest": {
+    "case_ids": "wall_000..wall_029",
+    "case_seed_formula": "2026091100 + case_index",
+    "menu_seeds": [1, 2, 3],
+    "models": ["jepa", "dino"],
+    "expected_records": 180,
+    "complete_case_definition": "all six model/menu records are verified final result files"
+  },
+  "outcomes": {
+    "native_utility": "-native_terminal_distance",
+    "O_minus_P_native_utility": "native_utility[encoded_real_choice_O] - native_utility[predicted_choice_P]",
+    "P_minus_uniform_native_utility": "P selected native utility - mean native utility over the 300-candidate menu",
+    "O_minus_P_binary_success": "success[O] - success[P]",
+    "P_minus_uniform_binary_success": "success[P] - mean success over the 300-candidate menu",
+    "signed_native_menu_gap": "min(native_terminal_distance) - selected_native_terminal_distance",
+    "normalized_gap": "signed_native_menu_gap / (max(native_terminal_distance) - min(native_terminal_distance)); undefined for constant menus"
+  },
+  "primary_mask_and_support": {
+    "unit": "case",
+    "case_aggregation": "mean over three menu seeds and two models",
+    "primary_support_threshold": "at least 27 of 30 complete cases",
+    "missingness": "never impute missing physical outcomes"
+  },
+  "uncertainty": {
+    "case_bootstrap_replicates": 10000,
+    "case_bootstrap_seed": 20260911,
+    "sign_flip": "exact for n<=20; otherwise 100000 Monte Carlo sign flips with seed 20260912 and +1 correction",
+    "holm_families": ["two pooled O_minus_P outcomes", "two pooled P_minus_uniform outcomes"],
+    "interval_label": "unadjusted percentile 95% CI"
+  },
+  "frozen_predictors": {
+    "source": "frozen_near_tie.json",
+    "thresholds": "apply per-model Push-T-derived threshold without Wall retuning",
+    "logistic": "apply frozen Push-T full-fit coefficients once; no Wall refit"
+  },
+  "diagnostics": [
+    "raw P/O first-winner switch",
+    "P raw margin after distinct physical-action deduplication",
+    "raw AUROC for near-tie score and -raw-margin baseline",
+    "frozen flagged-vs-unflagged case-level native-gap sensitivity"
+  ],
+  "interpretation_guards": [
+    "All results are descriptive or exploratory and do not establish physical risk.",
+    "Partial or in-progress files are not evidence.",
+    "The frozen threshold and logistic model are not retuned on Wall outcomes.",
+    "A complete production run is required before the CLI writes analysis output."
+  ]
+}

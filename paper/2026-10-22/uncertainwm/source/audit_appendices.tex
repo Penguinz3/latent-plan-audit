@@ -1,0 +1,534 @@
+\appendix
+\section{Notation and interpretation glossary}
+\label{app:glossary}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{0.27\linewidth}p{0.69\linewidth}@{}}
+\toprule
+Symbol or term & Meaning\\
+\midrule
+$a_i$ & Candidate $i$: a complete 30-step physical action sequence.\\
+Endpoint $s_i$ & State after executing all actions in candidate $i$.\\
+$z_i$, $\hat z_i$, $z_g$ & Encoded realized endpoint, predicted terminal latent, encoded goal.\\
+$C_{\mathrm{pred}}$, $C_{\mathrm{real}}$ & The same latent goal cost evaluated on predicted or encoded realized endpoints.\\
+$a_{\mathrm{pred}}$ & Candidate selected by predicted latent cost.\\
+$a_{\mathrm{real}}$ & Candidate selected by realized-endpoint latent cost; retrospective, not a physical optimum.\\
+$a_{\mathrm{state}}$ & Candidate minimizing realized native terminal distance; retrospective and non-deployable.\\
+$D$, $U_{\mathrm{dist}}$ & Native distance and its negative, the higher-is-better distance utility.\\
+$R_{\mathrm{task}}$ & Cumulative official Push-T coverage reward or Wall binary completion.\\
+Record & One model, initial-state/goal instance, and proposal seed, with 300 candidates.\\
+Paired cell & One Push-T trajectory offset and seed with valid records for both models.\\
+Cluster & A scheduled Push-T trajectory or a complete Wall case; the resampling unit.\\
+Initial candidates & Samples before any CEM distribution update; historically called an ``iteration-0 menu'' in code.\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Original inference, unchanged}
+\label{app:original}
+
+Table~\ref{tab:original} retains the original pooled point estimates, percentile
+intervals, and Holm-adjusted sign-flip values. Push-T uses all 20 scheduled
+trajectory contrasts, 10,000 trajectory-bootstrap draws, and enumeration of
+all $2^{20}$ sign assignments for its two-sided paired test. Wall uses 29
+complete-case contrasts, 10,000 case-bootstrap draws (seed 20260911), and
+100,000 random sign assignments with the $+1$ correction (seed 20260912).
+Holm adjustment covers two outcomes separately for endpoint correction and
+predicted-minus-uniform selection within each environment. Push-T's bounded
+candidate sensitivity has its own originally declared two-outcome family.
+The exact test requires sign symmetry of cluster contrasts under the null.
+No new state-selector comparison has been added to those original families.
+
+\begin{table}[h]
+\caption{Unchanged original inference. Intervals are marginal 95\% cluster
+bootstrap intervals; $p_H$ is the original within-family Holm-adjusted value.}
+\label{tab:original}
+\centering\small
+\begingroup
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lllrr}
+\toprule
+Environment & Contrast & Outcome & Effect [95\% CI] & $p_H$\\
+\midrule
+Push-T & Realized $-$ predicted & Distance utility & $-5.299\ [-9.635,-0.706]$ & .075539\\
+ & & Reward & $+0.04183\ [-0.17569,0.24024]$ & .701128\\
+ & Predicted $-$ uniform & Distance utility & $+48.702\ [40.473,56.434]$ & $7.6294\!\times\!10^{-6}$\\
+ & & Reward & $+0.76099\ [0.42033,1.11714]$ & .00040245\\
+Wall & Realized $-$ predicted & Distance utility & $-0.25365\ [-0.90933,0.36436]$ & .923091\\
+ & & Completion & $+0.02874\ [0,0.08046]$ & .923091\\
+ & Predicted $-$ uniform & Distance utility & $+12.36271\ [10.90015,13.75461]$ & $1.99998\!\times\!10^{-5}$\\
+ & & Completion & $+0.01705\ [0,0.04544]$ & .501395\\
+\bottomrule
+\end{tabular}
+\endgroup
+\end{table}
+
+The new diagnostic uses seeds 20261002 (Push-T) and 20261003 (Wall), with
+10,000 whole-cluster draws shared by its three contrasts and both outcomes
+within each environment. These intervals quantify the new post-hoc comparisons
+and do not replace the original test decisions. Recomputing the original
+results is a required preflight check before generating the new results.
+
+\section{Model-specific descriptive comparisons}
+\label{app:models}
+
+Table~\ref{tab:models} uses the same retained cells, cluster definitions,
+denominators, and common bootstrap draws as the pooled post-hoc analysis.
+Each model estimate compares a latent selector with the same physical state
+selector on matched sets. Repeated state-selected outcomes do not provide a
+second physical experiment. All entries are descriptive; differences between
+their confidence intervals are not model-interaction tests.
+
+\begin{table}[h]
+\caption{Post-hoc model-specific effects with 95\% cluster-bootstrap
+intervals. ``Real'', ``pred'', and ``state'' refer to the three defined selectors.}
+\label{tab:models}
+\centering\small
+\begin{tabular}{lllrr}
+\toprule
+Task & Model & Contrast & $\Delta U_{\mathrm{dist}}$ [95\% CI] & $\Delta R_{\mathrm{task}}$ [95\% CI]\\
+\midrule
+Push-T & JEPA-WM & Real $-$ pred & $-9.330\ [-14.394,-4.557]$ & $+.081\ [-.130,.280]$\\
+ & & State $-$ real & $+67.623\ [59.887,76.057]$ & $-.861\ [-1.271,-.453]$\\
+ & & State $-$ pred & $+58.293\ [50.879,65.943]$ & $-.780\ [-1.169,-.407]$\\
+ & DINO-WM & Real $-$ pred & $-1.268\ [-7.898,6.272]$ & $+.003\ [-.241,.237]$\\
+ & & State $-$ real & $+72.005\ [63.922,80.083]$ & $-.815\ [-1.179,-.462]$\\
+ & & State $-$ pred & $+70.737\ [64.052,77.512]$ & $-.812\ [-1.229,-.420]$\\
+\addlinespace
+Wall & JEPA-WM & Real $-$ pred & $-.655\ [-1.649,.215]$ & $+.0345\ [0,.0920]$\\
+ & & State $-$ real & $+4.910\ [3.327,6.785]$ & $0\ [0,0]$\\
+ & & State $-$ pred & $+4.255\ [3.001,5.839]$ & $+.0345\ [0,.0920]$\\
+ & DINO-WM & Real $-$ pred & $+.148\ [-.724,.923]$ & $+.0230\ [0,.0690]$\\
+ & & State $-$ real & $+6.376\ [4.222,8.825]$ & $0\ [0,0]$\\
+ & & State $-$ pred & $+6.524\ [4.551,8.761]$ & $+.0230\ [0,.0690]$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Sampling, missingness, and the recovery amendment}
+\label{app:protocol}
+
+\paragraph{Push-T selection and support.}
+The manifest selects validation trajectory indices 0--20 except 7, for 20
+trajectories, without consulting audit outcomes. For a trajectory of length
+$L$, its five offsets are $\lfloor k(L-31)/4\rfloor$, $k=0,\ldots,4$.
+Only recorded sequence lengths select the offsets. Expert block-state motion
+labels a secondary phase proxy but does not select or exclude records.
+Each offset is paired with proposal seeds 1, 2, and 3 and both models.
+The resulting 100 distinct initial-state/goal segments produce 300 offset--seed
+cells and 600 scheduled model records. The manifest's historical
+\texttt{segment\_count=300} includes proposal seeds.
+
+For an outcome $Y$ (either $U_{\mathrm{dist}}$ or $R_{\mathrm{task}}$), let
+$\delta_{tcm}$ be a specified selector contrast for trajectory $t$, cell $c$,
+and model $m$. The cell indicator $I_{tc}$ equals one only when both model
+records are valid under the original rules. The pooled trajectory contrast is
+\begin{equation}
+ \bar\delta_t=\frac{1}{2}\sum_{m=1}^{2}
+          \frac{1}{15}\sum_{c=1}^{15} I_{tc}\delta_{tcm},
+ \qquad \widehat\Delta=\frac{1}{20}\sum_{t=1}^{20}\bar\delta_t.
+ \label{eq:cluster}
+\end{equation}
+Missing-cell terms are defined as zero \emph{contrast contributions}; the
+formula does not assign a physical outcome to a missing action. The two-model
+mask and fixed 15-cell denominator are preserved for every new contrast and
+model split. Observed-cell means would answer a different question.
+The original support requirement is at least 540 matched model records and
+at least 18 trajectories with 12 or more matched cells. The retained study
+has 562 matched records and 19 such trajectories, so it meets that requirement;
+all 20 scheduled trajectories still enter Eq.~\ref{eq:cluster}.
+Support gates require coverage of the scheduled experiment, not a positive
+physical effect or a guarantee of adequate power. The original broad-recovery
+rule additionally required passed integrity and repeat-stability checks;
+positive pooled means and lower 95\% bounds, with Holm-adjusted $p<.05$, for
+both outcomes under raw and bounded candidates; positive model-specific lower
+bounds for both outcomes in both candidate sets; and no conflicting pooled
+signs. Failure of any condition blocked the broad claim. Sampling, outcomes,
+aggregation, tests, and this rule were recorded in the original locked protocol;
+recovery was a later amendment, and the auxiliary and new state-selector
+analyses are separately labeled post-hoc.
+
+\paragraph{Infrastructure recovery.}
+The Push-T protocol was recorded as locked on August 30, 2026 and prohibited
+retries. Its original 600-record attempt ledger ended with 420 completed and
+180 failed records. A fatal CUDA error had contaminated the persistent worker,
+causing later untouched records to receive the same infrastructure error.
+The recovery amendment mechanically selected 169 failed records with that
+exact error message for at most one attempt each, in isolated processes.
+The remaining failure classes were not eligible. The amendment states that
+eligibility was fixed before inspecting scientific outcomes, preserving
+candidate specifications and analysis rules, but this remains a deviation
+from the original no-retry rule. Original failures remain in the ledger;
+recovery neither deletes them nor makes them original completions.
+The no-retry rule restricted opportunities to change retained evidence through
+selective repeated attempts; the amendment does not retroactively satisfy it.
+The recovery-augmented analysis has
+577 valid and 23 invalid records, with 15 valid records unmatched across models.
+Removing every recovery-sourced artifact leaves 408 matched records and only
+14 trajectories meeting the original eligibility threshold: the original-only
+subset fails the original support requirement. Its distance and reward effects
+are $-5.39$ ($[-9.32,-1.40]$) and $-0.019$ ($[-0.212,0.160]$), respectively.
+These are exploratory sensitivity estimates, not a restored confirmatory
+analysis or evidence that missingness is ignorable. The 15 observed trajectory
+groups used by a separate diagnostic are not 15 eligible primary clusters.
+
+Earlier protocol versions are not scientific inputs to this analysis: v1.2
+failed its prescribed RGB/serialization integrity check, and v1.3 failed
+before usable measurements because a replay-encoding helper lacked its
+required model argument. The v1.4 source and evidence are separately bound;
+no earlier-version result is reused. The retained protocol, amendment, and
+ledgers make this history inspectable but do not constitute an independently
+registered timestamp for the declared outcome-blind sequence.
+
+\paragraph{Wall selection and missingness.}
+Case seeds 2026091100--2026091129 generate the 30 initial-state/goal cases.
+Engineering seeds 2026091001 and 2026091002 are excluded from the study.
+The wall location is 32 and door location 30 in the underlying 65-pixel
+environment. Each case contains seeds 1--3 and both models. One JEPA-WM
+record, case \texttt{wall\_028}, seed 1, failed scientific validation and was
+not retried. Its entire case is excluded from the complete-case physical
+analysis. The remaining five valid records contribute only to all-valid
+descriptions. Case contrasts average the six model--seed records equally;
+the 29 case means are the inferential units. This restriction does not rule
+out difficulty-dependent missingness.
+The retained failure ledger labels this failure \texttt{scientific\_or\_child}
+but supplies no error message, so its specific failed criterion is not
+established by that ledger.
+
+\paragraph{Integrity and ties.}
+Original Push-T validity required finite production arrays, decomposition
+residuals at most $10^{-8}$, and score reproduction within $2\times10^{-5}$
+with zero relative tolerance. Re-encoding serialized observations at chunk
+sizes eight and four had to preserve scores within that tolerance and the
+latent minimum tie sets exactly. Original repeat and provenance checks also
+applied. Execution completion alone therefore did not imply scientific
+validity; a valid record still needed its partner for paired analysis.
+The new preflight checks cover all 780 unique scheduled records: 756 valid
+and 24 invalid across both environments. They verify candidate counts,
+selectors, stored physical arrays, cross-model agreement, and the original
+headline analysis before new computation. Push-T's original latent selectors
+require a unique minimum under absolute tolerance $10^{-10}$ and relative
+tolerance $10^{-8}$; otherwise that record is invalid. Wall's latent selectors
+use the first exact minimum. The new state selector also uses the first exact
+minimum. No exact minimum ties or duplicate physical sequences occur in the
+retained valid candidate sets; synthetic tests cover deterministic tie
+handling. Cross-model identity is established by arrays, not assumed from
+shared random-seed labels.
+
+\section{Model and environment configuration}
+\label{app:config}
+
+\paragraph{Visual encoding.}
+Both models in both tasks load \texttt{dinov2\_vits14} from
+\texttt{dinov2\_vits14\_pretrain.pth}: a ViT-S/14 with 384-dimensional patch
+features. Raw RGB is divided by 255 and resized to $224\times224$ using
+bilinear interpolation with \texttt{align\_corners=False}. The audit loaders
+fix spatial scale and aspect-ratio augmentation ranges to $(1,1)$ and disable
+flips, motion augmentation, automatic augmentation, and random erasing.
+DINO-WM then uses per-channel mean and standard deviation $(0.5,0.5,0.5)$.
+JEPA-WM uses mean $(0.485,0.456,0.406)$ and standard deviation
+$(0.229,0.224,0.225)$. Sharing backbone weights therefore does not mean that
+the models receive identically normalized inputs. Each model's preprocessing
+is fixed between its predicted and realized costs.
+
+\paragraph{Proprioception and actions.}
+Push-T proprioception contains the agent's two-dimensional position and
+velocity (four coordinates), not block pose. Wall proprioception is the
+two-dimensional agent position. After the released coordinate normalization,
+the frozen proprioceptive encoder is a kernel-one, stride-one convolution,
+equivalent to a per-time-step affine map. Its output dimension is 20 for
+DINO-WM on Push-T and 10 on Wall, versus 16 for JEPA-WM on both tasks.
+Table~\ref{tab:normalization} gives the environment normalization constants;
+the operational meaning of action normalization is
+$a_{\mathrm{physical}}=\sigma_a\odot a_{\mathrm{normalized}}+\mu_a$.
+Consequently, candidate zero is a normalized-mean sequence, not necessarily
+a physical no-op. Gaussian proposals are unbounded in normalized coordinates;
+the bounded sensitivity is defined separately, not silently substituted.
+
+\begin{table}[h]
+\caption{Released environment normalization constants, rounded here for
+readability. Full-precision values remain in the bound dataset registry.}
+\label{tab:normalization}
+\centering\small
+\begin{tabular}{@{}p{0.10\linewidth}p{0.32\linewidth}p{0.50\linewidth}@{}}
+\toprule
+Task & Quantity & Values\\
+\midrule
+Push-T & Action mean & $(-0.0087,\ 0.0068)$\\
+ & Action standard deviation & $(0.2019,\ 0.2002)$\\
+ & Proprioception mean & $(236.61549,\ 264.56741,\ -2.93032,\ 2.54308)$\\
+ & Proprioception standard deviation & $(101.12020,\ 87.01120,\ 74.84556,\ 74.14009)$\\
+Wall & Action mean & $(-0.00556462,\ 0.01319782)$\\
+ & Action standard deviation & $(0.75233287,\ 0.74668980)$\\
+ & Proprioception mean & $(31.89451,\ 31.81402)$\\
+ & Proprioception standard deviation & $(17.66352,\ 17.27517)$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The model horizon is six, action dimension ten, physical action dimension two,
+and frame grouping five, giving 30 executed actions with
+\texttt{action\_skip=1}. Initial image and proprioceptive history lengths are
+one; rollout context is two. The objective is terminal visual MSE plus
+$0.1$ proprioceptive MSE, with \texttt{sum\_all\_diffs=False}.
+Push-T samples with a PyTorch generator on the initial latent's device;
+Wall uses a CPU generator with shape $[6,300,10]$ before permutation.
+Both use standard-normal proposals, but their random streams should not be
+assumed identical across environments.
+
+\paragraph{Dataset and goals.}
+Push-T uses \path{data/pusht_noise/val} in the retained official source tree.
+The simulator starts from \texttt{states[offset]} with the recorded shape,
+and replays the 30 recorded relative actions using environment seed 1 to
+generate the goal. The goal is not merely a frame extracted from the dataset
+video. Wall cases are generated from the fixed random-state seeds described
+above rather than validation-trajectory offsets. The capture routine
+\texttt{run\_case} in \path{experiments/wall_decision_audit.py} calls the released
+\texttt{WallEnvWrapper.sample\_random\_init\_goal\_states}, which delegates to
+\texttt{DotWall.generate\_random\_state} in
+\path{evals/simu_env_planning/envs/wall_env/envs/wall.py} under the bound
+Wall configuration. It samples positions uniformly on opposite sides of the
+wall within padded boundaries, reversing travel direction with probability
+one half. These routines, not the seed alone, define case generation.
+
+\paragraph{Source and checkpoint bindings.}
+The official JEPA-WM source commit is
+\nolinkurl{13cf1d9c7e476f53c17714d2e0f1dc239a883ce0};
+the DINOv2 source commit is
+\nolinkurl{b194f00db6136677fc8a4cc2ef2168f7699dfba2}.
+The recorded Wall model-repository revision is
+\nolinkurl{9b9c41ef249466630dbf1a20e78391865d07b3b9}.
+The checkpoint filenames and SHA-256 digests are:
+\begin{itemize}
+\item \texttt{dino\_wm\_pusht.pth.tar}:\\
+\texttt{8ec9cb05f22812d7f12e3c216b0637f4}\allowbreak\texttt{1641055c0653e503e2746edb981b550f}.
+\item \texttt{jepa\_wm\_pusht.pth.tar}:\\
+\texttt{9beca3eafe0739c3b3adb5d734fa435c}\allowbreak\texttt{cbda0fea8a65d53d4cccec176aaaa0eb}.
+\item \texttt{dino\_wm\_wall.pth.tar}:\\
+\texttt{ff170be5aec9249768be4a220d600b8f}\allowbreak\texttt{00a8589b2a78982ecf9273809f2767df}.
+\item \texttt{jepa\_wm\_wall.pth.tar}:\\
+\texttt{8efb0623cfba1cb3ca210de26f7579c8}\allowbreak\texttt{3dd24936635f11989c515afcb23bea1e}.
+\end{itemize}
+The DINOv2 weight-file digest is
+\texttt{b938bf1bc15cd2ec0feacfe3a1bb553f}\allowbreak\texttt{e8ea9ca46a7e1d8d00217f29aef60cd9};
+the recorded loaded state-dictionary digest is
+\texttt{5bb315664719c85935c4b67a0f8faef9}\allowbreak\texttt{d01b7dfb57ffbecef1c062f7b4e4aa35}.
+The Push-T dataset archive digest is
+\texttt{442f5dee246edf670964ed7bdecd2486}\allowbreak\texttt{83cd6d00580fa0e4d458abb53f92da08}.
+
+These facts are bound by
+\path{experiments/official_pusht_v14_manifest.json}
+(\texttt{selection}, \texttt{protocol}, \texttt{source\_bundle});
+\path{output/source/physical_ai_supplement/official_pusht_v14_certificate_issuance.json}
+(model, encoder, and data bindings);
+\path{experiments/wall_audit_20260910/protocol.json};
+\path{experiments/wall_audit_20260910/execution_bindings.json}; and
+\path{output/wall_recompute_20260910_v3/metadata/provenance.json}.
+The official planning configurations lie under
+\path{configs/evals/simu_env_planning/}, with task directories \texttt{pt}
+and \texttt{wall}, model directories \texttt{dino-wm} and \texttt{jepa-wm},
+and names ending
+\path{L2_cem_sourcedset_H6_nas6_ctxt2_r224_alpha0.1_ep96_decode.yaml}
+for Push-T or the analogous \texttt{sourcerandstate} name for Wall.
+Normalization constants are in
+\path{app/plan_common/datasets/__init__.py} of the bound source tree.
+Checkpoint training epochs, training seeds, and complete training-data
+provenance are not established by these retained audit bindings; we do not
+infer them from filenames.
+
+\section{Earlier sensitivities and exact score accounting}
+\label{app:sensitivity}
+
+These analyses predate the state-selector extension and retain their original
+status and numerical summaries. They are not new experiments for this revision.
+The bounded-candidate and original-completions-only sensitivities concern
+endpoint correction, not the new state-selector contrasts. We have not
+reported an observed-cell-denominator analysis or an original-completions-only
+state-selector analysis. Their absence leaves the corresponding robustness
+questions unresolved; the existing sensitivities cannot establish that
+missingness is ignorable for any contrast.
+
+\paragraph{Bounded candidates.}
+Restrict each set to sequences with maximum absolute normalized action
+coordinate at most three. The original support requirement is at least 200
+candidates and valid untied latent selectors. The realized-minus-predicted
+effects are $-5.80$ in distance utility (95\% CI $[-11.00,-0.21]$,
+Holm-adjusted $p=.111$) and $+0.115$ in reward ($[-0.093,0.314]$, $p=.296$).
+The raw analysis remains primary; this sensitivity does not alter the new
+state-selector definition or its candidate set.
+
+\paragraph{Physical components.}
+The component analysis was post-hoc, specified before inspecting component
+outcomes. It uses the same 562 matched records, 281 cells, 20 trajectories,
+and fixed denominators. Position and velocity utilities are negative
+Euclidean distances to their goal components; angle utility is negative
+circular absolute error, unlike the raw angle coordinate in native distance.
+Terminal coverage reward is the last official reward, not the raw overlap
+fraction reported separately by the environment. Holm adjustment covers these
+five declared component tests.
+
+\begin{table}[h]
+\caption{Retained post-hoc Push-T component effects, realized minus predicted.
+Intervals are original marginal 95\% trajectory-bootstrap intervals.}
+\label{tab:appendix_components}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Component utility & Effect & 95\% CI & $p_H$\\
+\midrule
+Agent position & $-1.817$ & $[-4.564,.971]$ & .232\\
+Block position & $+1.267$ & $[.480,2.176]$ & .0203\\
+Circular block angle & $+.0325$ & $[.0197,.0471]$ & .000210\\
+Agent velocity & $-5.809$ & $[-10.523,-1.187]$ & .0957\\
+Terminal coverage & $+.00901$ & $[.00035,.01696]$ & .110\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For exact native squared-distance accounting, the mean predicted-selection
+minus realized-selection contributions are $-477.2$ from agent position,
+$+79.2$ from block position, $+0.226$ from raw angle, and $-1497.0$ from agent
+velocity. Positive contributions mean realized selection reduces that squared
+error. The maximum rowwise identity residual is $3.64\times10^{-11}$.
+These mixed-unit squared contributions are not additive contributions to mean
+unsquared distance utility, and they change under coordinate rescaling.
+
+\paragraph{Stored-latent interpolation.}
+For each candidate, the earlier post-hoc sensitivity scores
+$(1-\lambda)\hat z_i+\lambda z_i$, for $\lambda=0,.1,\ldots,1$, with all
+actions, goals, cost function, and physical outcomes otherwise unchanged. At
+$\lambda=.5$, 38.4\% of matched-record choices change and the distance effect
+is $-2.24$; at $\lambda=1$, these values are 58.9\% and $-5.30$.
+All ten nonzero-$\lambda$ pooled distance point estimates are negative.
+These aggregate points are not independent replicates, interpolated latents
+need not represent realizable states, and no trainable correction is evaluated.
+
+\paragraph{Score accounting is an identity, not a causal explanation.}
+For either modality, write its prediction error as $e_i=\hat z_i-z_i$, with
+dimension $d$. Then
+\begin{equation}
+ \frac{\|\hat z_i-z_g\|_2^2-\|z_i-z_g\|_2^2}{d}
+ =\frac{2(z_i-z_g)^\top e_i}{d}+\frac{\|e_i\|_2^2}{d}.
+ \label{eq:identity}
+\end{equation}
+Summing the two modalities with weights one and $0.1$ reconstructs
+$C_{\mathrm{pred}}(i)-C_{\mathrm{real}}(i)$ exactly; subtracting two candidates'
+identities reconstructs their margin change. The maximum residual in retained
+Push-T records is $6.66\times10^{-16}$. Directional terms dominate magnitude
+terms in 266 of 337 selector switches (78.9\%): the absolute directional
+margin between the predicted and realized winners exceeds the absolute
+magnitude margin after the visual and $0.1$ proprioceptive contributions are
+combined. This is a record-level fraction, not cluster-level inference.
+This explains algebraic score
+movement, not its physical desirability or a causal failure mechanism.
+The trajectory-weighted mean candidate-set Spearman correlation between the
+two costs is $.858$ (95\% CI $[.839,.875]$); the mean per-set median absolute
+cost difference is $.0505$, with mean ratio $.339$ to predicted-cost IQR.
+
+\paragraph{Ranking summaries.}
+Spearman correlates negative cost with higher-is-better outcome, using average
+ranks for exact ties. Pairwise accuracy counts whether lower cost favors the
+higher outcome, excluding pairs tied on either quantity. Per-record summaries
+use the original paired-cell, equal-model, trajectory aggregation.
+On bounded candidate support, the earlier descriptive distance-utility
+Spearman correlations are .367 for predicted and .345 for realized scoring;
+pairwise ranking accuracies are .599 and .591. Their normalized regrets are
+.250 and .274. For cumulative reward, the corresponding pairs are .121/.124,
+.469/.471, and .372/.359. For a higher-is-better outcome $Y$, normalized
+regret of selection $a$ is
+$(\max_iY(a_i)-Y(a))/(\max_iY(a_i)-\min_iY(a_i))$ when its denominator is
+positive and the selector is defined. These summaries are descriptive and
+do not establish ranking superiority.
+
+\section{Secondary selector-instability diagnostic}
+\label{app:neartie}
+
+The earlier near-tie diagnostic targets whether $a_{\mathrm{pred}}$ and
+$a_{\mathrm{real}}$ differ, not whether either fails physically. After
+deduplicating physical actions and retaining the lowest predicted cost per
+action, let $c_{(1)}$ and $c_{(2)}$ be the two lowest predicted costs.
+The ambiguity score is
+\begin{equation}
+ -\log_{10}\!\left[\max\!\left\{
+ \frac{c_{(2)}-c_{(1)}}{\max\{\operatorname{IQR}(C_{\mathrm{pred}}),10^{-12}\}},
+ 10^{-12}\right\}\right].
+\end{equation}
+The Push-T analysis was exploratory. Leave-one-trajectory-out logistic models
+include model identity, with model-specific top-quartile thresholds learned
+on the other 19 trajectories. Bootstrap intervals resample saved out-of-fold
+predictions without refitting the complete pipeline, and do not account for
+choosing this diagnostic after the primary result.
+
+On 562 matched records, unfitted normalized-ambiguity-score AUROC is $.714$ ($[.665,.762]$), compared
+with $.706$ for the fitted probability. The flagged group covers 25.3\% of
+records and switches 82.4\% of the time versus 51.0\% outside it. However,
+flagged-minus-unflagged normalized regret of $a_{\mathrm{pred}}$ is $-.007$ for distance utility
+($[-.039,.026]$) and $-.056$ for reward ($[-.143,.026]$), neither establishing
+greater physical regret.
+
+Before the secondary Wall extension, model thresholds were frozen at
+1.2899081787 for JEPA-WM and 1.4614315032 for DINO-WM, without Wall retuning.
+Across all 179 valid records, the normalized score has AUROC $.727$ versus
+$.735$ for raw margin. These descriptive estimates provide no normalization
+advantage. The signed native gap is
+$\min_iD(s_i,s_g)-D(s_{i_{\mathrm{pred}}},s_g)$; larger values mean less distance regret.
+Its flagged-minus-unflagged effect is $+.393$
+($[-1.704,2.627]$), using the 19 complete cases containing both groups.
+Thus prospective freezing limits retuning but does not establish physical-risk
+calibration, verification benefit, or an improvement over the simpler baseline.
+
+\section{Artifacts, recomputation, and scope}
+\label{app:repro}
+
+The new analysis reads retained candidate scores, actions, terminal states
+where available, native distances, and task outcomes. It verifies candidate
+identity across models and reproduces the original effects, intervals, tests,
+and families before computing the state-selector extension. Its numerical
+review independently matched all 36 pooled/model-specific summaries and
+intervals, valid-record selector outcomes, and cluster arrays. Original source
+artifacts and result files are not overwritten.
+These revision materials are retained locally for author release; this work
+does not claim that the new package has already been publicly uploaded.
+
+The camera-ready artifact directory
+\path{output/task_native_selector_20261002/} contains the checked specification
+and implementation reviews, \texttt{summary.csv}, \texttt{row\_effects.csv},
+\texttt{cluster\_effects.csv}, \texttt{selection\_disagreements.csv},
+\texttt{original\_results.json}, \texttt{physical\_support.json},
+\texttt{RESULTS\_INTERPRETATION.md}, reproduction instructions, tests, and a
+portable reproduction bundle. \texttt{SCIENTIFIC\_FREEZE.md} records the
+pre-manuscript numerical freeze. The numerical summary SHA-256 is
+\texttt{3eb5cb00fd7be3f9e01a6f1e6277b003}\allowbreak\texttt{02d0e1549c7d8c8845fba59570bb09c6}.
+The reviewed result SHA-256 is
+\texttt{f679e348860c2e4db3af4eb98c506b29}\allowbreak\texttt{532127482c2fd60135d8d142801ca8d9}.
+Repository and portable relative commands are provided in the respective
+\texttt{README.md} files. The portable package was checked from a relocated
+directory with Python's isolated mode and an existing NumPy installation;
+all declared numerical outputs matched exactly. This is not a fresh dependency
+installation or simulator rerun. Python and NumPy suffice for the new CPU analysis;
+it does not run models or environments.
+
+Stored native distances are authoritative for retrospective selection.
+The compact Push-T export does not contain full initial-state and raw-image
+evidence, and exported Wall terminal states have rounded float32 precision;
+recomputing native distances from those rounded arrays would change the
+numerical object being audited. The retained distances and reward arrays
+are sufficient for the reported retrospective comparisons, not for complete
+regeneration of the original simulator runs.
+
+The earlier compact Wall bundle contains 179 valid model records with 300
+candidates each: 53,700 model--candidate records. Repeated physical sets
+across models remain separate prediction records, not independent physical
+trials. Its 180-record manifest and failure ledger preserve the failed row.
+The Push-T manifest, preregistration, recovery amendment, issuance and attempt
+ledgers, analysis outputs, and source bindings are retained separately. The
+artifacts support analysis recomputation, not reproduction of model training
+or a claim that every raw observation is included in one compact export.
+
+\paragraph{Tool assistance and responsibility.}
+LLM agents assisted implementation, analysis scripting, verification, and
+drafting. Numerical claims were checked against retained artifacts and an
+independent recomputation. The authors remain responsible for study design,
+scientific claims, and presentation; agent assessments are not empirical
+evidence. These simulator audits provide no deployment or robot-safety guarantee.

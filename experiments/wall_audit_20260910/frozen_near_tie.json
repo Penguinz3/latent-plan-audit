@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "frozen_before_wall_outcomes": true,
+  "source": "experiments\\official_pusht_v14_near_tie_validation_20260904.json",
+  "source_sha256": "a4b157226b313ea83e05ac3bb0ffcb97b97330d160e4d38bacd9e7d7af6c6af9",
+  "training_rows": 562,
+  "training_trajectories": 20,
+  "feature_definition": {
+    "deduplication": "minimum predicted score for each distinct physical action sequence",
+    "raw_margin": "second_smallest_P - smallest_P",
+    "normalized_margin": "raw_margin / max(IQR(unique_action_P), 1e-12)",
+    "near_tie_score": "-log10(max(normalized_margin, 1e-12))",
+    "quantiles": "numpy linear quantile",
+    "larger_score_predicts": "P/O selector switch",
+    "does_not_claim": "physical risk or epistemic uncertainty"
+  },
+  "thresholds": {
+    "jepa": {
+      "near_tie_score_greater_equal": 1.2899081787268187,
+      "training_quantile": 0.75
+    },
+    "dino": {
+      "near_tie_score_greater_equal": 1.4614315031643466,
+      "training_quantile": 0.75
+    }
+  },
+  "probability_models": {
+    "near_tie_score": {
+      "feature_transform": "identity",
+      "center": 0.9702705270253835,
+      "scale": 0.6628366125880634,
+      "coefficients": [
+        0.3661177630338595,
+        0.12948890372567923,
+        0.8204800455438882
+      ],
+      "column_order": [
+        "intercept",
+        "is_dino",
+        "standardized_feature"
+      ],
+      "ridge": 0.0001,
+      "evaluation": "Apply once on Wall; never refit or retune thresholds on Wall. Full Push-T fit, not prior out-of-fold predictions."
+    },
+    "raw_margin": {
+      "feature_transform": "-log10(max(raw_margin,1e-12))",
+      "center": 1.7520021400262498,
+      "scale": 0.635807228874861,
+      "coefficients": [
+        0.3320594333921007,
+        0.1965788192096219,
+        0.80807532044045
+      ],
+      "column_order": [
+        "intercept",
+        "is_dino",
+        "standardized_feature"
+      ],
+      "ridge": 0.0001,
+      "evaluation": "Apply once on Wall; never refit or retune thresholds on Wall. Full Push-T fit, not prior out-of-fold predictions."
+    }
+  }
+}

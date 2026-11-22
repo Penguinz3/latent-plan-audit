@@ -405,8 +405,10 @@
         <div class="hero-note">
           <p>Correcting a predicted latent endpoint can substantially change a planner's selected action without reliably improving its physical outcome.</p>
           <div class="actions">
-            <a class="button primary" href="paper/decision_level_auditing_iros_pwms.pdf">Read paper</a>
-            <a class="button" href="preprint/2026-10-09/decision_level_auditing_preprint.pdf">Updated preprint</a>
+            <a class="button primary" href="paper/2026-10-22/physworldai/decision_level_auditing_physworldai_camera_ready_final_20261022.pdf">Latest paper</a>
+            <a class="button" href="paper/decision_level_auditing_iros_pwms.pdf">Original IROS paper</a>
+            <a class="button" href="https://github.com/Penguinz3/latent-plan-audit/tree/main/paper/2026-10-22">All final versions</a>
+            <a class="button" href="https://github.com/Penguinz3/latent-plan-audit/releases/tag/v2026.11.22">Code and data release</a>
             <a class="button" href="https://openreview.net/forum?id=By0Aujqsrv">OpenReview</a>
           </div>
         </div>
@@ -418,7 +420,7 @@
     <section class="section" id="audit">
       <div class="section-head">
         <div>
-          <p class="kicker">The intervention</p>
+          <p class="kicker">The original Push-T study</p>
           <h2>Prediction quality is not decision quality.</h2>
         </div>
         <p class="lede">For the same frozen 300-action Push-T menu, we compare the action chosen from predicted terminal latents (<code>P</code>) with the action chosen after scoring simulator-realized, re-encoded endpoints in the same latent space (<code>O</code>). Goal-distance utility (<code>G</code>) and task reward (<code>J</code>) judge both selected actions physically.</p>
@@ -509,7 +511,7 @@ pair = pair_margin_audit(
 
       <aside class="posthoc">
         <h3>Evidence boundary</h3>
-        <p>The repository includes the frozen study documents, sealed aggregate result, deterministic analyzers, and sanitized compact evidence. The approximately 241 GB of per-candidate arrays are not duplicated on GitHub. Component and near-tie analyses are explicitly labeled post-hoc and do not establish a causal source of failure.</p>
+        <p>The <a href="https://github.com/Penguinz3/latent-plan-audit/releases/tag/v2026.11.22">November 22 release</a> adds the final PhysWorldAI, RoboPAD, and UncertainWM papers and sources, experiment code, and a 110 MB numerical reproduction download for Push-T and Wall. It recomputes results from saved candidate evidence, without rerunning models or simulators. The approximately 241 GB of full raw arrays remain excluded. Component, near-tie, and hindsight state-selector analyses are post-hoc; they do not isolate an encoder defect. The figures on this page describe the original Push-T study.</p>
       </aside>
     </section>
   </main>
